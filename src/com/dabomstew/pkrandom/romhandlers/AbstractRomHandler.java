@@ -28,6 +28,9 @@ package com.dabomstew.pkrandom.romhandlers;
 /*----------------------------------------------------------------------------*/
 
 import java.io.PrintStream;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,6 +99,8 @@ public abstract class AbstractRomHandler implements RomHandler {
             List<Pokemon> allPokemon = this.getPokemon();
 
             if (restrictions.allow_gen1) {
+                /*
+                
                 addPokesFromRange(mainPokemonList, allPokemon, 1, 151);
                 if (restrictions.assoc_g1_g2 && allPokemon.size() > 251) {
                     addEvosFromRange(mainPokemonList, 1, 151, 152, 251);
@@ -103,6 +108,10 @@ public abstract class AbstractRomHandler implements RomHandler {
                 if (restrictions.assoc_g1_g4 && allPokemon.size() > 493) {
                     addEvosFromRange(mainPokemonList, 1, 151, 387, 493);
                 }
+                */
+                int[] pokemonIndexes = createPokemonIndexes("pokemonIndex.txt");
+                addPokesFromIntList(mainPokemonList, allPokemon, pokemonIndexes);
+                addEvosFromRange(mainPokemonList,1, 386, 1, 386);
             }
 
             if (restrictions.allow_gen2 && allPokemon.size() > 251) {
@@ -165,6 +174,34 @@ public abstract class AbstractRomHandler implements RomHandler {
             }
         }
     }
+    
+    private int[] createPokemonIndexes(String filename) {
+        int[] pokemonIndexes = new int[493];
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            String line;
+            int currentIndex = 0;
+            while ((line = reader.readLine()) != null) {
+                pokemonIndexes[currentIndex] = Integer.parseInt(line);
+                currentIndex++;
+            }
+            reader.close();
+            return pokemonIndexes;            
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }        
+    }
+    
+    
+    private void addPokesFromIntList(List<Pokemon> pokemonPool, List<Pokemon> allPokemon, int[] pokemonIndexes) {
+        for (int i = 0; i < pokemonIndexes.length; i++) {
+            if(!pokemonPool.contains(allPokemon.get(pokemonIndexes[i])) && pokemonIndexes[i] != 0)
+                pokemonPool.add(allPokemon.get(pokemonIndexes[i]));
+        }
+    }
+    
 
     private void addEvosFromRange(List<Pokemon> pokemonPool, int first_min, int first_max, int second_min,
             int second_max) {
